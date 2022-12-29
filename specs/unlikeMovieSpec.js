@@ -1,0 +1,47 @@
+import FavoriteMovieIdb from "../src/scripts/data/favorite-movie-idb";
+import * as TestFactories from './helpers/testFactories'
+
+describe('Unliking a Movie', () => {
+    const addLikeButtonContainer = () => {
+        document.body.innerHTML = '<div id="likeButtonContainer"></div>';
+    };
+
+    beforeEach(async () => {
+        addLikeButtonContainer();
+        await FavoriteMovieIdb.putMovie({ id: 1 });
+    });
+
+    afterEach(async () => {
+        await FavoriteMovieIdb.deleteMovie(1);
+    });
+
+    it('should show the unlike button when the movie has been liked', async () => {
+        await TestFactories.createLikeButtonPresenterWithMovie({ id: 1 });
+
+        expect(document.querySelector('[aria-label="unlike this movie"]')).toBeTruthy();
+    });
+
+    it('should not show the like button when the movie has been liked', async () => {
+        await TestFactories.createLikeButtonPresenterWithMovie({ id: 1 });
+
+        expect(document.querySelector('[aria-label="like this movie"]')).toBeFalsy();
+    });
+
+    it('should be able to remove the liked movie from the list', async () => {
+        await TestFactories.createLikeButtonPresenterWithMovie({ id: 1 });
+
+        document.getElementById('likeButton').dispatchEvent(new Event('click'));
+
+        expect(await FavoriteMovieIdb.getAllMovies()).toEqual([]);
+    });
+
+    it('should not fail if the unliked movie is not in the list', async () => {
+        await TestFactories.createLikeButtonPresenterWithMovie({ id: 1 });
+
+        await FavoriteMovieIdb.deleteMovie(1);
+
+        document.getElementById('likeButton').dispatchEvent(new Event('click'));
+
+        expect(await FavoriteMovieIdb.getAllMovies()).toEqual([]);
+    });
+});
